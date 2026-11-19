@@ -6,16 +6,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ReadmeBranch
+          ref: Integration
           submodules: recursive
-      - name: Find project
-        run: find . -maxdepth 3 \( -name "*.xcodeproj" -o -name "*.xcworkspace" \)
-      - name: Show projects and schemes
-        run: xcodebuild -list
-        continue-on-error: true
       - name: Build unsigned
         run: |
-          xcodebuild -project Moonlight.xcodeproj -scheme Moonlight \
+          PROJ=$(find . -maxdepth 2 -name "*.xcodeproj" -not -path "./moonlight-common/*" -not -path "./X1Kit/*" | head -1)
+          echo "Project: $PROJ"
+          xcodebuild -project "$PROJ" -list
+          SCHEME=$(xcodebuild -project "$PROJ" -list -json | python3 -c "import json,sys; s=json.load(sys.stdin)['project']['schemes']; print(next((x for x in s if x in ('Moonlight','VoidLink','Limelight')), s[0]))")
+          echo "Scheme: $SCHEME"
+          xcodebuild -project "$PROJ" -scheme "$SCHEME" \
             -configuration Release -sdk iphoneos -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
       - name: Make IPA
