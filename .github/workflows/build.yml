@@ -6,6 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ReadmeBranch
           submodules: recursive
       - name: Show projects and schemes
         run: xcodebuild -list
